@@ -17,6 +17,7 @@ var managerOpts = {
   "reconnectionAttempts":10
 };
 
+//
 $(function () {
     var socket = io('localhost:3000',managerOpts);
 
