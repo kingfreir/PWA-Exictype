@@ -1,10 +1,12 @@
+
 var gulp = require('gulp');
 var nodemon = require('gulp-nodemon');
 
-gulp.task('develop',function(){
-  var stream = nodemon(
-    {script: 'index.js'
-    , ext: 'html js'});
+gulp.task('default',function(){
+  var stream = nodemon({
+    script: 'server.js',
+    tasks: ['browserify'],
+    ext: 'html js'});
 
   stream
     .on('restart',function(){

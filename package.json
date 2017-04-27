@@ -3,11 +3,23 @@
   "version": "0.1.0",
   "description": "chat pwa",
   "dependencies": {
+    "dexie": "^1.5.1",
     "express": "^4.15.2",
+    "jquery": "^3.2.1",
+    "redis": "^2.7.1",
     "socket.io": "^1.7.3"
   },
   "devDependencies": {
+    "browserify": "^14.3.0",
     "gulp": "^3.9.1",
-    "gulp-nodemon": "^2.2.1"
+    "gulp-nodemon": "^2.2.1",
+    "nodemon": "^1.11.0",
+    "watchify": "^3.9.0"
+  },
+  "scripts": {
+    "watch": "watchify client/main.js -o public/bundle.js -v",
+    "build": "browserify client/main.js -o public/bundle.js",
+    "server": "nodemon server.js",
+    "start": "npm run build & npm run server"
   }
 }
