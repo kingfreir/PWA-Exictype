@@ -10,8 +10,15 @@ app.get('/jquery/jquery.js', function(req, res) {
     res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.min.js');
 });
 
-//var redis = require('redis'),
-  //  client = redis.createClient();
+var redis = require('redis'),
+    supRaw = require('node-redis-raw');
+
+var client = redis.createClient();
+
+//example
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
 
 io.on('connection',function(socket){
   console.log('a user connected');

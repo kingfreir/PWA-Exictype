@@ -7,9 +7,15 @@ if(navigator.serviceWorker){
 }
 
 var $ = require('jquery');
-//the entire socket client is bundled SO the issue is simply fetch errors
-//due to reconnection failing
 var io = require('socket.io-client');
+var dexie = require('dexie');
+var msgDb = new dexie("messages");
+
+msgDb.version(1).stores({
+  messages: 'message,date'
+});
+
+msgDb.open();
 
 var managerOpts = {
   "reconnection":true,
@@ -17,7 +23,6 @@ var managerOpts = {
   "reconnectionAttempts":10
 };
 
-//
 $(function () {
     var socket = io('localhost:3000',managerOpts);
 
@@ -26,11 +31,12 @@ $(function () {
       console.log(socket);
 
       if(socket.connected){
+        //when online
         socket.emit('chat message', {"message":msg, "date":new Date});
         $('#m').val('');
         return false;
       }else{
-        //was failing because it didnt return false!!
+        //when offline
         console.log(msg);
         $('#messages').append($('<li>').text(msg));
         $('#m').val('');
@@ -39,5 +45,6 @@ $(function () {
     });
     socket.on('chat message', function(msg){
       $('#messages').append($('<li>').text(msg.message));
+      msgDb.messages.add(msg);
     });
 });
