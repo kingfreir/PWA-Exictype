@@ -36,7 +36,8 @@ gulp.task('nodemon',function(){
   return nodemon({
     script: 'server.js',
     ext: 'js html css',
-    env: {'NODE_ENV': 'development'}
+    env: {'NODE_ENV': 'development'},
+    ignore: '/client/*.js'
   });
 });
 

@@ -9,7 +9,8 @@
     "lodash": "^4.17.4",
     "node-redis-raw": "^0.1.1",
     "redis": "^2.7.1",
-    "socket.io": "^1.7.3"
+    "socket.io": "^1.7.3",
+    "nohm": "^0.9.8"
   },
   "devDependencies": {
     "browserify": "^14.3.0",
