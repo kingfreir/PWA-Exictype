@@ -49,10 +49,6 @@ io.on('connection',function(socket){
 
 app.use(express.static(__dirname + "/public"));
 
-app.get('/jquery/jquery.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.min.js');
-});
-
 app.get('/redis/messages',function(req,res){
     //res.send redis message array
     //use req.params to know which messages to load (date wise)

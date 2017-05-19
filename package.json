@@ -5,7 +5,6 @@
   "dependencies": {
     "dexie": "^1.5.1",
     "express": "^4.15.2",
-    "jquery": "^3.2.1",
     "lodash": "^4.17.4",
     "node-redis-raw": "^0.1.1",
     "redis": "^2.7.1",
