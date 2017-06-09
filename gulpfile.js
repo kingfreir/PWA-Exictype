@@ -13,7 +13,7 @@ gulp.task('browserify',function(){
   return browserify(toBundle)
     .bundle()
     .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./public/'));
+    .pipe(gulp.dest('./public'));
 });
 
 gulp.task('watchify',function(){
@@ -26,7 +26,7 @@ gulp.task('watchify',function(){
     return bundler.bundle()
       .on('error',gutil.log.bind(gutil,'browserify error'))
       .pipe(source('bundle.js'))
-      .pipe(gulp.dest('./public/'));
+      .pipe(gulp.dest('./public'));
   }
 
   return rebundle();
@@ -37,7 +37,7 @@ gulp.task('nodemon',function(){
     script: 'server.js',
     ext: 'js html css',
     env: {'NODE_ENV': 'development'},
-    ignore: '/client/*.js'
+    ignore: ['client/**']
   });
 });
 

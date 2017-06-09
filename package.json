@@ -3,13 +3,14 @@
   "version": "0.2.0",
   "description": "chat pwa",
   "dependencies": {
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.2",
     "dexie": "^1.5.1",
     "express": "^4.15.2",
-    "lodash": "^4.17.4",
-    "node-redis-raw": "^0.1.1",
+    "jquery": "^3.2.1",
     "redis": "^2.7.1",
     "socket.io": "^1.7.3",
-    "nohm": "^0.9.8"
+    "vinyl-source-stream": "^1.1.0"
   },
   "devDependencies": {
     "browserify": "^14.3.0",

@@ -1,59 +1,57 @@
 const express = require('express');
 
+const privatekey = "QCcYhyF7ycIEVfhyZ7dH-qEe_1IgLD3gUyyRIDXEIxI";
+
 var app = express();
+var bodyparser = require('body-parser');
+var debug = require('debug')('server');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var redis = require('redis'),
-    supRaw = require('node-redis-raw');
 
-//default redis client connection 127.0.0.1:6379
-var client = redis.createClient();
-
-var nohm = require('nohm').Nohm;
-
-client.on("connect",function(){
-  console.log('connected to redis');
-});
-
-client.on("error", function (err) {
-    console.log("Error " + err);
-});
+var redis = require('./redis.js');
 
 io.on('connection',function(socket){
-  console.log('a user connected');
+  debug('a user connected');
 
-  socket.on('chat message',function(_msg){
-    console.log('message: '+_msg.message+' '+new Date(_msg.date));
-    var RedisID;
-    //save message to redis
-    client.incr('id',function(err,id){
-      client.hmset('msg:'+id,"message "+_msg.message,"date "+_msg.date);
-      RedisID = id;
-    });
-    dexie_msg = {
-      'message':_msg.message,
-      'date':_msg.date,
-      'redisID':RedisID
-    };
-
-    //emit msg with redisID
-    io.emit('chat message',dexie_msg);
+  socket.on('chat message',function(msg){
+    debug('message: '+msg.content);
+    msg.date = new Date();
+    redis.add(msg,io);
   });
 
   //when a user disconnects
   socket.on('disconnect',function(){
-    console.log('user disconnected');
+    debug('user disconnected');
   });
 
 });
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({extended:true}));
 
 app.use(express.static(__dirname + "/public"));
 
+app.get('/config.json',function(req,res){
+  res.sendFile(__dirname+'/config.json');
+});
+
 app.get('/redis/messages',function(req,res){
-    //res.send redis message array
-    //use req.params to know which messages to load (date wise)
+    debug('request rid: '+req.query.rid);
+    redis.send(res,req.query.rid);
+});
+
+app.post('/chat',function(req,res){
+    var msg = {
+      'content':req.body.content,
+      'send_date':req.body.send_date,
+      'date':new Date(),
+      'from':req.body.from,
+      'to':req.body.to,
+      'rid':null
+    }
+    redis.add(msg,io);
+    res.send('OK');
 });
 
 http.listen(3000, function(){
-  console.log('listening on 3000');
+  debug('listening on 3000!');
 });
