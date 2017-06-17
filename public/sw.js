@@ -8,12 +8,14 @@ self.addEventListener('install',function(event){
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache){
       cache.addAll(['/',
+      '/chat',
       'sw.js',
+      'login.js',
       'bundle.js',
+      'imgs/icon.png',
       'manifest.json',
-      'config.json',
-      'index.css',
-      'index.html'
+      'config',
+      'w3.css'
     ]);
     }).catch(function(error){
       console.log(error);
@@ -42,6 +44,9 @@ self.addEventListener('fetch',function(event){
   if(requestUrl.origin === location.origin){
     if(requestUrl.pathname.startsWith('/redis/messages')){
       event.respondWith(fetch(event.request));
+      return;
+    }else if(requestUrl.pathname.startsWith('/socket.io')){
+      event.respondWith(queueSocket(event));
       return;
     }
   }
@@ -79,6 +84,29 @@ self.addEventListener('sync',function(event){
   }
 });
 
+function send_unsent(){
+  var request = self.indexedDB.open('msg-database');
+  var db;
+
+  request.onsuccess = function(event){
+    db = request.result;
+
+    var trans = db.transaction('unsent','readonly');
+
+    var store = trans.objectStore('unsent');
+    var index = store.index('id');
+
+    index.openCursor().onsuccess = function(event){
+      var cursor = event.target.result;
+      if(cursor){
+
+      }else{
+
+      }
+    }
+  }
+}
+
 function dbSync() {
     var request = self.indexedDB.open('msg-database');
     var db;
@@ -97,13 +125,20 @@ function dbSync() {
           var url = new URL('../redis/messages?rid='+cursor.value.rid,hostname);
           fetch(url).then(function(response){
             response.json().then(function(res){
-                //test res for content
+              console.log(res);
+              if(res[0]!=undefined){
                 self.registration.showNotification("Exictype",{
                   body:"You have new messages!"
                 });
+              }
             });
           });
         }
       }
     }
+}
+
+function queueSocket(event){
+  console.log(event.request.url);
+  return fetch(event.request);
 }

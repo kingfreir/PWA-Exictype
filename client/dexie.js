@@ -1,6 +1,9 @@
 var dexie = require('dexie');
+var crypto = require('./crypto.js');
+var util = require('./utilities.js');
 var db = new dexie('msg-database');
 var $ = require('jquery');
+var CONFIG = require('../config.json');
 
 db.version(1).stores({
   received: "++id,content,send_date,date,from,to,&rid",
@@ -18,9 +21,8 @@ function add_received(msg){
       if(count==0){
         db.transaction('rw',db.received,function(){
           db.received.add(msg);
-          $('#messages')
-            .append($('<li>')
-            .text(msg.content+' '+new Date(msg.date)));
+          //add to list
+          addtoList(msg);
         }).catch(function(err){
           console.log('error saving message');
         });
@@ -31,44 +33,74 @@ function add_received(msg){
 function add_unsent(msg){
   db.transaction('rw',db.unsent,function(){
     db.unsent.add(msg);
-    $('#messages')
-      .append($('<li class="unsent">')
-      .text(msg.content+' '+new Date(msg.date)));
+    //add to list
+    addtoList(msg);
   }).catch(function(err){
     console.log('error saving message');
   });
 }
 
-//doesnt show unsent messages: notification?
 function post_messages(){
   db.received
     .orderBy('rid')
     .toArray()
     .then(function(messages){
     messages.forEach(function(el){
-      $('#messages').append($('<li>').text(el.content+' '+new Date(el.date)));
+      addtoList(el);
     });
   });
+
+  //maybe modify to add them to list
+  db.unsent
+    .count()
+    .then(function(count){
+      if(count>0){
+        new Notification("Exictype",{
+          body:"You have unsent messages!"
+        });
+      }
+    })
 }
 
-var hostname = 'http://localhost:3000';
-
-//when there are unsent messages send old rid, creating duplicates in <li>
 function update_db(){
   db.received
     .reverse()
     .sortBy('rid')
     .then(function(arr){
-      var url = new URL('../redis/messages?rid='+arr[0].rid,hostname);
-
+      var rid;
+      if(arr[0]!=undefined){
+        rid = arr[0].rid;
+      }else{
+        rid = 0;
+      }
+      var url = new URL('../redis/messages?rid='+rid,CONFIG.hostname);
       fetch(url).then(function(res){
         res.json().then(function(messages){
+          //notification
           messages.forEach(function(el){
             add_received(el);
           });
         });
       });
     });
+}
+
+function addtoList(msg){
+  var style;
+  var content = crypto.decrypt(msg.content);
+  if(msg.from === util.get_cookie('username')){
+    style = 'float:right';
+  }else{
+    style = 'float:left';
+  }
+
+  $('#messages').append("<li class='w3-card w3-round w3-animate-fade w3-section' "+
+  "style='width:70%;"+style+"'>"
+  +"<h5>"+content+"</h5>"
+  +"<div class='w3-right-align'><p>"+new Date(msg.date)+"</p></div></li>");
+
+  $('body').scrollTop($('ul li').last().position().top+
+    $('ul li').last().height());
 }
 
 exports.update = update_db;

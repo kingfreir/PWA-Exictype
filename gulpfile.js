@@ -34,7 +34,7 @@ gulp.task('watchify',function(){
 
 gulp.task('nodemon',function(){
   return nodemon({
-    script: 'server.js',
+    script: 'app.js',
     ext: 'js html css',
     env: {'NODE_ENV': 'development'},
     ignore: ['client/**']

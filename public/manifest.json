@@ -9,8 +9,5 @@
     "src":"imgs/icon.png",
     "sizes":"96x96",
     "type":"image/png"
-  }],
-  "related_applications":[{
-      "platform":"web"
   }]
 }

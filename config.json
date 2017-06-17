@@ -1,4 +1,5 @@
 {
   "hostname":"http://localhost:3000",
-  "maxMessages":100
+  "maxMessages":100,
+  "publicKey":"BJwpiOXM_dO2rPwFkGCILNT2EuhLez-Qu8C4yQIkcAbFaYZJwViWpt2IeK6PeomkCOxVPY_Mbc9rBAB4px7JAQc"
 }

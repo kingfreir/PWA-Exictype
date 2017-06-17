@@ -1,0 +1,10 @@
+extends template.pug
+
+block content
+  div(class='w3-container w3-mobile' style='width:75%;padding-top:100px')
+    form(id='frm' class='w3-panel' action='/chat' method='post')
+      label Username
+      input(id='in' class='w3-input' type='text' name='username')
+      p
+      button(class='w3-btn w3-blue') Sign in
+    script(src='login.js')

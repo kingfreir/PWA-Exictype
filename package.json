@@ -1,16 +1,19 @@
 {
   "name": "exictype",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "chat pwa",
   "dependencies": {
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
+    "crypto": "0.0.3",
     "dexie": "^1.5.1",
     "express": "^4.15.2",
     "jquery": "^3.2.1",
+    "pug": "^2.0.0-rc.2",
     "redis": "^2.7.1",
     "socket.io": "^1.7.3",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "web-push": "^3.2.2"
   },
   "devDependencies": {
     "browserify": "^14.3.0",
@@ -23,7 +26,8 @@
   "scripts": {
     "watch": "watchify client/main.js -o public/bundle.js -v",
     "build": "browserify client/main.js -o public/bundle.js",
-    "server": "nodemon server.js",
-    "start": "npm run build & npm run server"
+    "server": "nodemon app.js",
+    "gulp": "gulp",
+    "start": "npm run gulp"
   }
 }
