@@ -1,5 +1,9 @@
 'use strict';
 
+const webpush = require('web-push');
+const fs = require('fs');
+var C = require('./config.json');
+
 var watchify = require('watchify');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
@@ -41,5 +45,16 @@ gulp.task('nodemon',function(){
   });
 });
 
+gulp.task('keys',generateKeys());
+
 gulp.task('build',['browserify']);
-gulp.task('default',['watchify','nodemon']);
+gulp.task('default',['keys','watchify','nodemon']);
+
+function generateKeys(){
+  if(!fs.existsSync('keys.json')){
+    var vapidKeys = webpush.generateVAPIDKeys();
+    fs.writeFile('keys.json',JSON.stringify(vapidKeys),'utf8',function(err){
+      if(err) throw err;
+    })
+  }
+}

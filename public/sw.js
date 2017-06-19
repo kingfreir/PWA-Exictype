@@ -61,11 +61,14 @@ self.addEventListener('fetch',function(event){
 
 //push event are sent by server
 self.addEventListener('push',function(event){
-  const title = "New push";
+  var payload = event.data ? event.data.text():'no payload';
+  const title = "Exictype";
   const options = {
-    body: 'working'
+    body: payload,
   }
-  event.waitUntil(self.registration.showNotification(title,options));
+  event.waitUntil(
+    self.registration.showNotification(title,options)
+  );
 });
 
 /*
@@ -113,12 +116,9 @@ function dbSync() {
 
     request.onsuccess = function(event){
       db = request.result;
-
       var trans = db.transaction('received','readonly');
-
       var store = trans.objectStore('received');
       var index = store.index('rid');
-
       index.openCursor(null,'prev').onsuccess = function(event){
         var cursor = event.target.result;
         if(cursor){
@@ -139,6 +139,6 @@ function dbSync() {
 }
 
 function queueSocket(event){
-  console.log(event.request.url);
+  
   return fetch(event.request);
 }

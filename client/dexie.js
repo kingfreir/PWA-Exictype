@@ -2,6 +2,7 @@ var dexie = require('dexie');
 var crypto = require('./crypto.js');
 var util = require('./utilities.js');
 var db = new dexie('msg-database');
+var df = require('dateformat');
 var $ = require('jquery');
 var CONFIG = require('../config.json');
 
@@ -28,8 +29,23 @@ function add_received(msg){
         });
       }
     });
+  db.received
+    .count()
+    .then(function(result){
+      if(result>CONFIG.maxMessages){
+        deleteOldest();
+      }
+    })
 }
 
+function deleteOldest(){
+  db.received
+    .first()
+    .delete()
+    .then(function(deleteCount){
+
+    });
+}
 function add_unsent(msg){
   db.transaction('rw',db.unsent,function(){
     db.unsent.add(msg);
@@ -88,6 +104,7 @@ function update_db(){
 function addtoList(msg){
   var style;
   var content = crypto.decrypt(msg.content);
+  var username = msg.from;
   if(msg.from === util.get_cookie('username')){
     style = 'float:right';
   }else{
@@ -96,8 +113,8 @@ function addtoList(msg){
 
   $('#messages').append("<li class='w3-card w3-round w3-animate-fade w3-section' "+
   "style='width:70%;"+style+"'>"
-  +"<h5>"+content+"</h5>"
-  +"<div class='w3-right-align'><p>"+new Date(msg.date)+"</p></div></li>");
+  +"<h5><b>"+username+":</b> "+content+"</h5>"
+  +"<div class='w3-right-align w3-tiny'><p>"+df(msg.date)+"</p></div></li>");
 
   $('body').scrollTop($('ul li').last().position().top+
     $('ul li').last().height());

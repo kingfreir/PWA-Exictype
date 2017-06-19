@@ -10,7 +10,7 @@ router.get('/messages',function(req,res){
       arr.push(obj);
     }
   }).then(function(){
-    res.json(arr);
+    res.json(arr.slice(0,100));
   });
 })
 

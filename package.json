@@ -6,6 +6,7 @@
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
     "crypto": "0.0.3",
+    "dateformat": "^2.0.0",
     "dexie": "^1.5.1",
     "express": "^4.15.2",
     "jquery": "^3.2.1",

@@ -8,7 +8,7 @@ if(navigator.serviceWorker){
   //periodicSync not available
 
   navigator.serviceWorker.ready.then(function(reg){
-    subscribe(reg);
+    //subscribe(reg);
   });
 
   navigator.serviceWorker.ready.then(function(reg){
