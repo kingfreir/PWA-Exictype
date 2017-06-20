@@ -34,7 +34,7 @@ messaging.onTokenRefresh(function(){
 })
 
 messaging.onMessage(function(payload){
-    new Notification(payload);
+    console.log(payload);
 })
 
 messaging.requestPermission()
@@ -161,4 +161,24 @@ $(document).ready(function () {
       })
     }
     $('#signout').click(sign_out);
+
+    function test_push(){
+      messaging.getToken()
+      .then(function(currentToken){
+        fetch('/redis/push',{
+          headers:{
+            'Content-type':'application/json'
+          },
+          method:'POST',
+          body:JSON.stringify({
+            title:'Exictype',
+            content:'test push',
+            token:currentToken
+          })
+        }).then(function(res){
+          if(res.ok)console.log('pushed');
+        })
+      })
+    }
+    $('#push').click(test_push);
 });

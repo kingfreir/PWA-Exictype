@@ -68,13 +68,13 @@ router.post('/push',function(req,res){
       "Authorization":'key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o'
     },
     method:'POST',
-    body:{ "notification": {
+    body:JSON.stringify({ "notification": {
         "title": req.body.title,
         "body": req.body.content,
         "click_action" : C.hostname
       },
       "to" : req.body.token
-    }
+    })
   });
   res.send('OK');
 });
