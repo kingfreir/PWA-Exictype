@@ -2,19 +2,18 @@ var staticCacheName = 'exictype-v1';
 var allCaches = [
   staticCacheName
 ];
-var hostname = 'http://localhost:3000';
 
 self.addEventListener('install',function(event){
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache){
-      cache.addAll(['/',
+      cache.addAll([
+      '/',
       '/chat',
       'sw.js',
       'login.js',
       'bundle.js',
       'imgs/icon.png',
       'manifest.json',
-      'config',
       'w3.css'
     ]);
     }).catch(function(error){
@@ -42,11 +41,9 @@ self.addEventListener('fetch',function(event){
   var requestUrl = new URL(event.request.url);
 
   if(requestUrl.origin === location.origin){
-    if(requestUrl.pathname.startsWith('/redis/messages')){
+    if(requestUrl.pathname.startsWith('/socket.io')){
+      //this does nothing;just a template
       event.respondWith(fetch(event.request));
-      return;
-    }else if(requestUrl.pathname.startsWith('/socket.io')){
-      event.respondWith(queueSocket(event));
       return;
     }
   }
@@ -65,6 +62,7 @@ self.addEventListener('push',function(event){
   const title = "Exictype";
   const options = {
     body: payload,
+    icon:'imgs/icon.png'
   }
   event.waitUntil(
     self.registration.showNotification(title,options)
@@ -84,6 +82,10 @@ self.addEventListener('periodicsync',function(event){
 self.addEventListener('sync',function(event){
   if(event.tag == 'database_sync'){
     event.waitUntil(dbSync());
+  }else if(event.tag == 'unsent_sync'){
+    event.waitUntil(send_unsent());
+  }else if(event.tag == 'socket_sync'){
+    //unnecessary
   }
 });
 
@@ -93,19 +95,41 @@ function send_unsent(){
 
   request.onsuccess = function(event){
     db = request.result;
-
-    var trans = db.transaction('unsent','readonly');
-
+    var trans = db.transaction('unsent','readwrite');
     var store = trans.objectStore('unsent');
-    var index = store.index('id');
+    var count = store.count();
 
-    index.openCursor().onsuccess = function(event){
-      var cursor = event.target.result;
-      if(cursor){
-
-      }else{
-
+    count.onsuccess = function(){
+      var result = count.result;
+      if(result>0){
+        cursorSend(store);
       }
+    }
+  }
+}
+
+function cursorSend(store){
+  var index = store.index('send_date');
+  var requests = new Array();
+
+  index.openCursor().onsuccess = function(event){
+    var cursor = event.target.result;
+    if(cursor){
+      var request = new Request('/redis/messages',{
+        method:'POST',
+        headers:{
+          'Content-type':'application/json'
+        },
+        body:JSON.stringify(cursor.value)
+      });
+      requests.push(request);
+      cursor.continue();
+    }else{
+      requests.forEach(function(request){
+        fetch(request).then(function(res){
+          if(res.ok) //delete unsent
+        })
+      })
     }
   }
 }
@@ -122,10 +146,9 @@ function dbSync() {
       index.openCursor(null,'prev').onsuccess = function(event){
         var cursor = event.target.result;
         if(cursor){
-          var url = new URL('../redis/messages?rid='+cursor.value.rid,hostname);
-          fetch(url).then(function(response){
+          fetch('/redis/messages?rid='+cursor.value.rid)
+          .then(function(response){
             response.json().then(function(res){
-              console.log(res);
               if(res[0]!=undefined){
                 self.registration.showNotification("Exictype",{
                   body:"You have new messages!"
@@ -136,9 +159,4 @@ function dbSync() {
         }
       }
     }
-}
-
-function queueSocket(event){
-  
-  return fetch(event.request);
 }

@@ -1,10 +1,14 @@
 extends template.pug
 
 block content
-  div(class='w3-container w3-mobile' style='width:75%;padding-top:100px')
-    form(id='frm' class='w3-panel' action='/chat' method='post')
+  #login(class='w3-container w3-mobile' style='width:75%;padding-top:100px')
+    form(id='frm' class='w3-panel' action="")
       label Username
       input(id='in' class='w3-input' type='text' name='username')
+      #warning(class='w3-panel w3-pale-red w3-display-container' style='display:none')
+        span(onclick='this.parentElement.style.display="none"' class='w3-button w3-display-topright') &times;
+        h3 Oops!
+        p Seems someone already signed in with that username!
       p
       button(class='w3-btn w3-blue') Sign in
     script(src='login.js')

@@ -1,11 +1,17 @@
 html
   head
     meta(name='viewport' content="width=device-width, initial-scale=1.0")
+    link(rel='icon' type='image/png' href='/imgs/icon.png')
     link(rel='stylesheet' type='text/css' href='w3.css')
     link(rel='manifest' href='/manifest.json')
     title Exictype
   body
+    #sidebar(class='w3-sidebar w3-bar-block w3-border-right w3-animate-left' style='z-index:4;display:none')
+      button#close(class='w3-bar-item w3-button w3-xlarge') Close &times;
+      button#signout(class='w3-bar-item w3-button w3-large') Sign out
     header#top-bar(class='w3-bar w3-top w3-blue')
-      p(class='w3-bar-item w3-xlarge' style='margin:8px') Exictype
+      button#open(class='w3-bar-item w3-button w3-xlarge' style='margin:0px') ☰
+      a(class='w3-bar-item w3-xlarge' style='margin:0px;text-decoration:none' href='/') Exictype
+    #overlay(class='w3-overlay' style='cursor:pointer')
   #container(class='w3-mobile' style='width:800px;margin:0 auto')
     block content

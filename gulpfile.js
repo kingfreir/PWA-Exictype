@@ -1,6 +1,5 @@
 'use strict';
 
-const webpush = require('web-push');
 const fs = require('fs');
 var C = require('./config.json');
 
@@ -13,14 +12,14 @@ var nodemon = require('gulp-nodemon');
 
 var toBundle = ['./client/main.js'];
 
-gulp.task('browserify',function(){
+gulp.task('browserify',['keys','config'],function(){
   return browserify(toBundle)
     .bundle()
     .pipe(source('bundle.js'))
     .pipe(gulp.dest('./public'));
 });
 
-gulp.task('watchify',function(){
+gulp.task('watchify',['keys','config'],function(){
   var bundler = watchify(browserify(toBundle,{debug:true}));
 
   bundler.on('update',rebundle);
@@ -45,16 +44,15 @@ gulp.task('nodemon',function(){
   });
 });
 
-gulp.task('keys',generateKeys());
+gulp.task('config',function(){
+  fs.writeFile('./public/config.json',JSON.stringify({
+    "hostname":C.hostname,
+    "maxMessages":C.maxMessages,
+    "socket_options":C.socket_options
+  },'utf8',function(err){
+    if(err) throw err;
+  }))
+});
 
 gulp.task('build',['browserify']);
-gulp.task('default',['keys','watchify','nodemon']);
-
-function generateKeys(){
-  if(!fs.existsSync('keys.json')){
-    var vapidKeys = webpush.generateVAPIDKeys();
-    fs.writeFile('keys.json',JSON.stringify(vapidKeys),'utf8',function(err){
-      if(err) throw err;
-    })
-  }
-}
+gulp.task('default',['watchify','nodemon']);

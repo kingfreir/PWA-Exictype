@@ -8,7 +8,8 @@ router.get('/',function(req,res){
   var config = {
     "hostname":C.hostname,
     "maxMessages":C.maxMessages,
-    "publicKey":K.publicKey
+    "publicKey":K.publicKey,
+    "socket_options":C.socket_options
   }
   res.json(config);
 })

@@ -5,7 +5,6 @@ var bodyparser = require('body-parser');
 var debug = require('debug')('server');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-
 var redis = require('./models/redis.js');
 
 io.on('connection',function(socket){
@@ -42,3 +41,5 @@ app.use('/config',require('./controllers/config'));
 http.listen(3000, function(){
   debug('listening on 3000!');
 });
+
+exports.io = io;

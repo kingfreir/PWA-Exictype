@@ -5,66 +5,54 @@ if(navigator.serviceWorker){
     console.log('failed');
   });
 
-  //periodicSync not available
-
   navigator.serviceWorker.ready.then(function(reg){
-    //subscribe(reg);
-  });
-
-  navigator.serviceWorker.ready.then(function(reg){
-    reg.sync.register('database_sync');
+    reg.sync.register('unsent_sync');
   });
 }
 
-var CONFIG = require('../config.json');
+var C = require('../public/config.json');
 var util = require('./utilities.js');
-
-function subscribe(reg){
-  const appKey = util.convert(CONFIG.publicKey);
-  reg.pushManager.subscribe({
-    userVisibleOnly:true,
-    applicationServerKey: appKey
-  }).then(function(subscription){
-    console.log('user subscribed');
-  })
-}
 
 var $ = require('jquery');
 var io = require('socket.io-client');
 var crypto = require('./crypto.js');
 var dexie = require('./dexie.js');
 
-var managerOpts = {
-  "reconnection":false,
-  "reconnectionDelay":5000
-};
-
 dexie.post();
 
-$(function () {
-    var socket = io(CONFIG.hostname,managerOpts);
+function sidebar_open(){
+  document.getElementById('sidebar').style.display = 'block';
+}
+
+function sidebar_close(){
+  document.getElementById('sidebar').style.display = 'none';
+}
+
+$(document).ready(function () {
+    var socket = io(C.hostname,C.socket_options);
     var username = util.get_cookie('username');
 
     socket.on('connect',function(){
       dexie.update();
-
-      dexie.db.unsent.toArray().then(function(messages){
-        messages.forEach(function(element){
-          socket.emit('chat message',element);
-          dexie.db.unsent.delete(element.id);
-        });
-      }).then(function(){
-        $(".unsent").remove();
-      });
+      //remove offline icon
     });
 
     socket.on('connect_error',function(){
-
+      //add offline icon
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.sync.register('socket_sync');
+      });
     });
 
     socket.on('reconnect_error',function(){
 
     });
+
+    socket.on('disconnect',function(){
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.sync.register('database_sync');
+      });
+    })
 
     $('form').submit(function(){
       var content = $('#m').val();
@@ -93,4 +81,28 @@ $(function () {
     socket.on('chat message', function(msg){
       dexie.add_r(msg);
     });
+
+    function sidebar_open(){
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    }
+    $('#open').click(sidebar_open);
+
+    function sidebar_close(){
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+    $('#close').click(sidebar_close);
+    $('#overlay').click(sidebar_close);
+
+    function sign_out(){
+      fetch('/redis/users/signout?username='+username).then(function(res){
+        console.log('signed out');
+        document.cookie = "username=;expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        window.location.href = "/";
+      }).catch(function(err){
+        console.log('cannot sign out in offline mode');
+      })
+    }
+    $('#signout').click(sign_out);
 });
