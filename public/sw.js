@@ -83,7 +83,7 @@ self.addEventListener('push',function(event){
   var payload = event.data ? event.data.text():'no payload';
   const title = "Exictype";
   const options = {
-    body:payload,
+    body:JSON.parse(payload).notification.body,
     icon:'imgs/icon.png'
   };
   event.waitUntil(
