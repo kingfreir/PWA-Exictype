@@ -10,23 +10,78 @@ if(navigator.serviceWorker){
   });
 }
 
+var firebase = require('firebase');
 var C = require('../public/config.json');
-var util = require('./utilities.js');
+
+var config = {
+    apiKey: "AIzaSyB2H9BUGL7PPC0ldhiLcyyB4_vUChjB2fk",
+    authDomain: "pwa-exictype.firebaseapp.com",
+    databaseURL: "https://pwa-exictype.firebaseio.com",
+    projectId: "pwa-exictype",
+    storageBucket: "pwa-exictype.appspot.com",
+    messagingSenderId: "334941391422"
+};
+
+var app = firebase.initializeApp(config);
+
+const messaging = firebase.messaging();
+
+messaging.onTokenRefresh(function(){
+  messaging.getToken()
+  .then(function(refreshedToken){
+    sendToken(refreshedToken);
+  })
+})
+
+messaging.onMessage(function(payload){
+    new Notification(payload);
+})
+
+messaging.requestPermission()
+.then(function(){
+  messaging.getToken()
+  .then(function(currentToken){
+    if(currentToken){
+      sendToken(currentToken);
+      fetch("https://iid.googleapis.com/iid/v1/"
+        +currentToken+"/rel/topics/general",
+        {
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':"key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o"
+          },
+          method:'POST'
+      }).then(function(res){
+        if(res.ok) console.log('okay');
+      })
+    }
+  })
+  navigator.serviceWorker.ready
+  .then(function(reg){
+    messaging.useServiceWorker(reg);
+  });
+})
+.catch(function(err){
+  console.log('no permission',err);
+})
+
+function sendToken(token){
+  fetch('./redis/register',{
+    headers:{
+      'Content-type':'application/json'
+    },
+    body:JSON.stringify({token:token}),
+    method:'POST'
+  })
+}
 
 var $ = require('jquery');
 var io = require('socket.io-client');
 var crypto = require('./crypto.js');
 var dexie = require('./dexie.js');
+var util = require('./utilities.js');
 
 dexie.post();
-
-function sidebar_open(){
-  document.getElementById('sidebar').style.display = 'block';
-}
-
-function sidebar_close(){
-  document.getElementById('sidebar').style.display = 'none';
-}
 
 $(document).ready(function () {
     var socket = io(C.hostname,C.socket_options);
@@ -55,6 +110,7 @@ $(document).ready(function () {
     })
 
     $('form').submit(function(){
+
       var content = $('#m').val();
       var crypted = crypto.encrypt(content);
       var msg = {

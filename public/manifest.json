@@ -6,6 +6,7 @@
   "background_color":"#2196F3",
   "theme_color":"#2196F3",
   "description":"A Progressive Web App with push notifications.",
+  "gcm_sender_id":"103953800507",
   "icons":[
     {
       "src":"imgs/icon.png",

@@ -12,14 +12,14 @@ var nodemon = require('gulp-nodemon');
 
 var toBundle = ['./client/main.js'];
 
-gulp.task('browserify',['keys','config'],function(){
+gulp.task('browserify',['config'],function(){
   return browserify(toBundle)
     .bundle()
     .pipe(source('bundle.js'))
     .pipe(gulp.dest('./public'));
 });
 
-gulp.task('watchify',['keys','config'],function(){
+gulp.task('watchify',['config'],function(){
   var bundler = watchify(browserify(toBundle,{debug:true}));
 
   bundler.on('update',rebundle);

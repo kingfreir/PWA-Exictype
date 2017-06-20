@@ -13,6 +13,7 @@ self.addEventListener('install',function(event){
       'login.js',
       'bundle.js',
       'imgs/icon.png',
+      'imgs/icon-4x.png',
       'manifest.json',
       'w3.css'
     ]);
@@ -55,6 +56,27 @@ self.addEventListener('fetch',function(event){
     return;
   }));
 });
+
+importScripts('https://www.gstatic.com/firebasejs/3.9.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/3.9.0/firebase-messaging.js');
+
+firebase.initializeApp({
+  'messagingSenderId': "334941391422"
+});
+const messaging = firebase.messaging();
+
+messaging.setBackgroundMessageHandler(function(payload) {
+  // Customize notification here
+  const notificationTitle = 'Exictype';
+  const notificationOptions = {
+    body: 'Background Message body.',
+    icon: '/imgs/icon.png'
+  };
+
+  return self.registration.showNotification(notificationTitle,
+      notificationOptions);
+});
+
 
 //push event are sent by server
 self.addEventListener('push',function(event){
@@ -123,11 +145,12 @@ function cursorSend(store){
         body:JSON.stringify(cursor.value)
       });
       requests.push(request);
+      cursor.delete();
       cursor.continue();
     }else{
       requests.forEach(function(request){
         fetch(request).then(function(res){
-          if(res.ok) //delete unsent
+          //if(res.ok) //delete unsent
         })
       })
     }

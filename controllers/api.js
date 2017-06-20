@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var debug = require('debug')('api');
 var redis = require('../models/redis');
+var fb = require('../firebase.json');
+var C = require('../config.json');
 
 router.get('/messages',function(req,res){
   var arr = new Array();
@@ -19,7 +21,7 @@ router.post('/messages',function(req,res){
     var msg = {
       'content':req.body.content,
       'send_date':req.body.send_date,
-      'date':new Date(),
+      'date':null,
       'from':req.body.from,
       'to':req.body.to,
       'rid':null
@@ -51,16 +53,51 @@ router.get('/users/signout',function(req,res){
 })
 
 router.post('/register',function(req,res){
-  redis.client.sadd('subscriptions',JSON.stringify(req.body));
+  redis.client.sadd('tokens',req.body.token);
   res.type('js').send('{"success":true}');
 })
 
+var request = require('request');
+
 router.post('/push',function(req,res){
-  
+
+  request({
+    uri:"https://fcm.googleapis.com/fcm/send",
+    headers:{
+      "Content-type":"application/json",
+      "Authorization":'key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o'
+    },
+    method:'POST',
+    body:{ "notification": {
+        "title": req.body.title,
+        "body": req.body.content,
+        "click_action" : C.hostname
+      },
+      "to" : req.body.token
+    }
+  });
+  res.send('OK');
 });
 
 router.post('/push/all',function(req,res){
-
+  request({
+    uri:"https://fcm.googleapis.com/fcm/send",
+    headers:{
+      "Content-type":"application/json",
+      "Authorization":'key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o'
+    },
+    method:'POST',
+    body:JSON.stringify({ "notification": {
+        "title": req.body.title,
+        "body": req.body.content,
+        "click_action" : C.hostname
+      },
+      "to" : "topics/general"
+    })
+  },function(err,res,body){
+    console.log(body)
+  });
+  res.send('OK');
 });
 
 module.exports = router;

@@ -1,5 +1,6 @@
 var debug = require('debug')('redis');
 var redis = require('redis');
+var df = require('dateformat');
 var bluebird = require('bluebird');
 var C = require('../config.json');
 
@@ -25,8 +26,8 @@ function incr(){
 function add_message(msg,rid){
   client.hmset('msg:'+rid,
     "content",msg.content,
-    "send_date",msg.send_date,
-    "date",msg.date,
+    "send_date",df(msg.send_date),
+    "date",df(),
     "from",msg.from,
     "to",msg.to,
     "rid",rid);
