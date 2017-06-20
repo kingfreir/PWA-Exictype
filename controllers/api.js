@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var debug = require('debug')('api');
 var redis = require('../models/redis');
-var webpush = require('web-push');
 
 router.get('/messages',function(req,res){
   var arr = new Array();
@@ -57,16 +56,7 @@ router.post('/register',function(req,res){
 })
 
 router.post('/push',function(req,res){
-  webpush.sendNotification({
-    endpoint:req.body.endpoint,
-    key: req.body.key,
-    authSecret: req.body.authSecret,
-    payload:'text'
-  }).then(function(){
-    console.log('push sent');
-  }).catch(function(err){
-    console.log(err);
-  });
+  
 });
 
 router.post('/push/all',function(req,res){
