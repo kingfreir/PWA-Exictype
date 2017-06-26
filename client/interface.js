@@ -39,7 +39,8 @@ function test_push(){
       body:JSON.stringify({
         title:'Exictype',
         content:'test push',
-        token:currentToken
+        token:currentToken,
+        username:username
       })
     }).then(function(res){
       res.json().then(function(res){

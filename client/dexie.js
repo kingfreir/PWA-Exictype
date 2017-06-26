@@ -115,15 +115,20 @@ function post_messages(){
   },1000);
 }
 
-/**Posts a "Please Sign In" warning message*/
+/**Posts a "Please Sign In" warning message and
+ * takes the user to the Sign in page after 2 seconds.
+ */
 function post_warning(){
   $('#messages').append("<li class='w3-card w3-round w3-animate-fade w3-section"
   +" w3-red' style='width:100%'>"
-  +"<h5>You are currently Signed Out. Please Sign In here</h5>"
+  +"<h4>You are currently Signed Out.</h4>"
+  +"<h5>You'll be momentarily taken to the Sign In page.</h5>"
   +"</li>");
-
   $('body').scrollTop($('ul li').last().position().top+
     $('ul li').last().height());
+    setTimeout(function(){
+      window.location.href='/';
+    },2000);
 }
 
 /**Queries the database for Redis ID (rid) of the latest message

@@ -7,7 +7,6 @@ var C = require('../config.json');
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
 
-//default redis client connection 127.0.0.1:6379
 var client = redis.createClient(C.redis_port[C.redis_host]);
 
 client.on("connect",function(){

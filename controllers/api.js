@@ -30,7 +30,9 @@ exports.post_messages = function(req,res){
     redis.add(msg,rid);
     msg.rid = rid;
     require('../app.js').io.emit('chat message',msg);
-    res.send('OK');
+    res.json({
+      "status":"success"
+    });
   });
 
 }
@@ -55,7 +57,9 @@ exports.post_bulk = function(req,res){
     });
   })
 
-  res.send('OK');
+  res.json({
+    "status":"success"
+  });
 }
 
 exports.check_user = function(req,res){
@@ -93,22 +97,25 @@ exports.register_token = function(req,res){
 }
 
 exports.push = function(req,res){
-  request({
-    uri:"https://fcm.googleapis.com/fcm/send",
-    headers:{
-      "Content-type":"application/json",
-      "Authorization":'key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o'
-    },
-    method:'POST',
-    body:JSON.stringify({ "notification": {
-        "title": req.body.title,
-        "body": req.body.content,
-        "click_action" : C.hostname
+  redis.client.hgetAsync(req.body.username,'token').then(function(token){
+
+    request({
+      uri:"https://fcm.googleapis.com/fcm/send",
+      headers:{
+        "Content-type":"application/json",
+        "Authorization":'key=AIzaSyCNlwpCMo4k8gthg4DtXyIHNTXWRljK95o'
       },
-      "to" : req.body.token
-    })
-  },function(err,response,body){
-    res.json(JSON.parse(body));
+      method:'POST',
+      body:JSON.stringify({ "notification": {
+          "title": req.body.title,
+          "body": req.body.content,
+          "click_action" : C.hostname
+        },
+        "to" : token
+      })
+    },function(err,response,body){
+      res.json(JSON.parse(body));
+    });
   });
 }
 

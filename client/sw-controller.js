@@ -44,6 +44,9 @@ _trackInstall = function(worker){
  * @param {ServiceWorkerRegistration} worker - The SW registration*/
 _updateReady = function (worker){
   console.log('skip waiting')
+  /**Personal note: Using a confirm() is not the prettiest option
+   * to request confirmation from the user, but it's simple and works.
+   */
   if(confirm('An update is available!\nWould you like to update now?')){
     worker.postMessage({action: 'skipWaiting'});
   }else{

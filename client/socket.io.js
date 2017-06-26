@@ -32,7 +32,6 @@ socket.on('disconnect',function(){
 })
 
 $('form').submit(function(){
-
   var content = $('#m').val();
   var crypted = crypto.encrypt(content);
   var msg = {
