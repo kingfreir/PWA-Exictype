@@ -1,7 +1,7 @@
 {
   "name":"Exictype: Exictos Chat PWA",
   "short_name":"Exictype",
-  "start_url":"/chat",
+  "start_url":"/",
   "display":"standalone",
   "background_color":"#2196F3",
   "theme_color":"#2196F3",

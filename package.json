@@ -1,6 +1,6 @@
 {
   "name": "exictype",
-  "version": "0.4.0",
+  "version": "0.9.0",
   "description": "chat pwa",
   "dependencies": {
     "bluebird": "^3.5.0",
@@ -26,10 +26,9 @@
     "watchify": "^3.9.0"
   },
   "scripts": {
-    "watch": "watchify client/main.js -o public/bundle.js -v",
-    "build": "browserify client/main.js -o public/bundle.js",
     "server": "nodemon app.js",
+    "build": "gulp build",
     "gulp": "gulp",
-    "start": "npm run gulp"
+    "start": "node app.js"
   }
 }

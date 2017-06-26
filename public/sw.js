@@ -1,8 +1,17 @@
-var staticCacheName = 'exictype-v1';
+/**Service Worker*/
+
+/**The Cache name: Remember to update the name whenever changes
+ * to the cache files are made.
+ */
+var staticCacheName = 'exictype-v2';
 var allCaches = [
   staticCacheName
 ];
 
+/**Install event
+ * On install we open up a new cache and add all the required
+ * files to generate the website behaviour when offline.
+ */
 self.addEventListener('install',function(event){
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache){
@@ -10,10 +19,10 @@ self.addEventListener('install',function(event){
       '/',
       '/chat',
       'sw.js',
-      'login.js',
+      'index.js',
       'bundle.js',
-      'imgs/icon.png',
-      'imgs/icon-4x.png',
+      '/imgs/icon.png',
+      '/imgs/icon-4x.png',
       'manifest.json',
       'w3.css'
     ]);
@@ -22,7 +31,10 @@ self.addEventListener('install',function(event){
     }));
 });
 
-//delete previous caches after activation of current service worker
+/**Activation event
+ * On activation we delete the older cache by checking the cache name
+ * for a version different from the latest one.
+ */
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -38,12 +50,36 @@ self.addEventListener('activate', function(event) {
   );
 });
 
+/**Message event
+ * Triggers activation of this SW during update.
+ * This SW will only take control after a page reload however so
+ * that is handled on the SW Controller (see sw-controller.js)
+ */
+self.addEventListener('message', function(event) {
+  if (event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+
+/**Fetch event
+ * The main objective of the SW is on the fetch event.
+ * All url fetchs are returned with a cached response if possible.
+ * Below is also a template for a custom fetch behaviour, whenever we
+ * wish to do more than just respond with the cached response.
+ */
 self.addEventListener('fetch',function(event){
   var requestUrl = new URL(event.request.url);
 
   if(requestUrl.origin === location.origin){
     if(requestUrl.pathname.startsWith('/socket.io')){
-      //this does nothing;just a template
+
+      /**Inside the respondWith we can place a function that
+       * can inspect the event, decide to either fetch from network
+       * for updates or return the cached response.
+       * This can be useful for checking if a user has updated his avatar,
+       * so that we can fetch the new one, store it on cache, and respondWith
+       * with the new avatar instead of the old cached one.
+       */
       event.respondWith(fetch(event.request));
       return;
     }
@@ -57,41 +93,29 @@ self.addEventListener('fetch',function(event){
   }));
 });
 
-importScripts('https://www.gstatic.com/firebasejs/3.9.0/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/3.9.0/firebase-messaging.js');
-
-firebase.initializeApp({
-  'messagingSenderId': "334941391422"
-});
-const messaging = firebase.messaging();
-
-messaging.setBackgroundMessageHandler(function(payload) {
-  // Customize notification here
-  const notificationTitle = 'Exictype';
-  const notificationOptions = {
-    body: 'Background Message body.',
-    icon: '/imgs/icon.png'
-  };
-
-  return self.registration.showNotification(notificationTitle,
-      notificationOptions);
-});
-
-
-//push event are sent by server
+/**Push event
+ * After registering this SW with firebase, all push messages are
+ * handled here. It loads our personal icon and retrieves the push
+ * message content. Then it is shown to our user through a notification.
+ */
 self.addEventListener('push',function(event){
-  var payload = event.data ? event.data.text():'no payload';
-  const title = "Exictype";
+  var payload = event.data ? JSON.parse(event.data.text()):'no payload';
+
+  const title = payload.notification.title;
   const options = {
-    body:JSON.parse(payload).notification.body,
-    icon:'imgs/icon.png'
+    body:payload.notification.body,
+    icon:'imgs/icon.png',
+    click_action:payload.notification.click_action
   };
   event.waitUntil(
     self.registration.showNotification(title,options)
   );
 });
 
-/*
+/**PeriodicSync event
+ * A useful event that has now deprecated.
+ * Allowed for sporadic updates.
+
 self.addEventListener('periodicsync',function(event){
     if(event.tag == 'database_sync'){
       event.waitUntil(dbSync());
@@ -101,6 +125,12 @@ self.addEventListener('periodicsync',function(event){
 });
 */
 
+/**Sync event
+ * One-off Background sync. When device is able to connect to the
+ * internet, the registered events are triggered once.
+ * One registration is required per Sync.
+ * The sync tag is checked and runs the corresponding function.
+ */
 self.addEventListener('sync',function(event){
   if(event.tag == 'database_sync'){
     event.waitUntil(dbSync());
@@ -111,6 +141,7 @@ self.addEventListener('sync',function(event){
   }
 });
 
+/**Checks if there are unsent messages to send on send_unsent sync event*/
 function send_unsent(){
   var request = self.indexedDB.open('msg-database');
   var db;
@@ -130,33 +161,58 @@ function send_unsent(){
   }
 }
 
+/**Iterates the IndexedDB and sends an array of unsent messages to the server*/
 function cursorSend(store){
   var index = store.index('send_date');
-  var requests = new Array();
+  var messages = new Array();
 
   index.openCursor().onsuccess = function(event){
     var cursor = event.target.result;
     if(cursor){
-      var request = new Request('/redis/messages',{
+      messages.push(cursor.value);
+      cursor.continue();
+    }else{
+      var request = new Request('/redis/messages/bulk',{
         method:'POST',
         headers:{
           'Content-type':'application/json'
         },
-        body:JSON.stringify(cursor.value)
+        body:JSON.stringify({message_array:messages})
       });
-      requests.push(request);
-      cursor.delete();
-      cursor.continue();
-    }else{
-      requests.forEach(function(request){
-        fetch(request).then(function(res){
-          //if(res.ok) //delete unsent
-        })
+      fetch(request).then(function(res){
+        if(res.ok) delete_unsent();
       })
     }
   }
 }
 
+/**If the unsent messages were sent successfully they are deleted
+ * from the database.
+ */
+function delete_unsent(){
+    var request = self.indexedDB.open('msg-database');
+    var db;
+
+    request.onsuccess = function(event){
+      db = request.result;
+      var trans = db.transaction('unsent','readwrite');
+      var store = trans.objectStore('unsent');
+
+      store.clear();
+
+      store.onsuccess = function(event){
+        console.log('unsent cleared');
+      }
+    }
+}
+
+/**When the database_sync sync event is triggered it checks the Redis ID
+ * of the latest stored message on the database and fetches new messages.
+ * If the returned array is not empty notifies the user that new messages
+ * have been received.
+ * Note: no new messages are added to the database at this stage.
+ * That is handled during the socket.io 'connect' event.
+ */
 function dbSync() {
     var request = self.indexedDB.open('msg-database');
     var db;

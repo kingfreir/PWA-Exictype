@@ -33,9 +33,9 @@ app.use(bodyparser.urlencoded({extended:true}));
 
 app.use(express.static(__dirname + "/public"));
 
-app.use('/',require('./controllers/index'));
-app.use('/chat',require('./controllers/chat'));
-app.use('/redis',require('./controllers/api'));
+app.use('/',require('./routes/index'));
+app.use('/chat',require('./routes/chat'));
+app.use('/redis',require('./routes/api'));
 
 http.listen(3000, function(){
   debug('listening on 3000!');
