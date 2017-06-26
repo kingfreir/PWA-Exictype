@@ -1,6 +1,16 @@
+/**The Sign in script*/
+
+/**If the username cookie had a value, that is, if a user is signed in
+ * redirect user to chat post_messages
+ */
 var username = getCookie('username');
 if(username!=""){window.location.href = "/chat";}
 
+/**Form submit function:
+ * Checks if the given username is already taken
+ * If it isnt, sends the username to the server and redirects user to chat post_messages
+ * Else it will display warning and ask user to change username
+ */
 document.getElementById('frm').onsubmit = function(){
   var username = document.getElementById('in').value;
   if(username=="")return false;
@@ -18,10 +28,16 @@ document.getElementById('frm').onsubmit = function(){
   return false;
 }
 
+/**Checks if the username already exists in the database
+ * @param {string} username - the input username
+ */
 function check_username(username){
   return fetch('/redis/users/check?username='+username);
 }
 
+/**Utility function that returns cookie value
+ * @param {string} cname - cookie name
+ */
 function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);

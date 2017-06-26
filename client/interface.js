@@ -1,14 +1,19 @@
+/**Interface or UI component:
+ * Includes all the button and UI functions
+ */
 var $ = require('jquery');
 var username = require('./utilities.js').get_cookie('username');
 
 const messaging = require('./firebase.js');
 
+/**Opens the sidebar and shows the overlay*/
 function sidebar_open(){
   document.getElementById('sidebar').style.display = 'block';
   document.getElementById('overlay').style.display = 'block';
 }
 $('#open').click(sidebar_open);
 
+/**Closes the sidebar and hides the overlay*/
 function sidebar_close(){
   document.getElementById('sidebar').style.display = 'none';
   document.getElementById('overlay').style.display = 'none';
@@ -16,6 +21,14 @@ function sidebar_close(){
 $('#close').click(sidebar_close);
 $('#overlay').click(sidebar_close);
 
+/**Signs out the user by requesting the server to remove the username
+ * from the database. This makes the username available for sign in for
+ * other users which represents a security failure BUT this application
+ * doesnt apply password sign in.
+ * After removing the username, the user is taken to the sign in page.
+ * If offline the user cannot sign out, since it is required that the
+ * database knows which usernames are available.
+ */
 function sign_out(){
   fetch('/redis/users/signout?username='+username)
   .then(function(res){
@@ -28,6 +41,9 @@ function sign_out(){
 }
 $('#signout').click(sign_out);
 
+/**Sends a test push to self by sending the user's username
+ * The format of a push request to the server is visible here.
+ */
 function test_push(){
   messaging.getToken()
   .then(function(currentToken){
@@ -52,6 +68,9 @@ function test_push(){
 }
 $('#push').click(test_push);
 
+/**Sends a test push to all users
+ * The format of a general push request to the server is visible here.
+ */
 function test_push_all(){
   messaging.getToken()
   .then(function(currentToken){
